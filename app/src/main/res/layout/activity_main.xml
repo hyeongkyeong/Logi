@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@color/colorPrimary"
+        android:gravity="center_vertical"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+
+        <ImageButton
+            android:id="@+id/bluetoothIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="@color/colorPrimary"
+            android:onClick="onBluetoothButtonClicked"
+            android:padding="10dp"
+            android:tint="@android:color/background_light"
+            app:srcCompat="@android:drawable/stat_sys_data_bluetooth" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="20"
+        android:padding="20dp">
+
+
+        <TextView
+            android:id="@+id/contentTextView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:maxLines="10"
+            android:scrollbars="vertical"
+            android:text="" />
+
+        <!--
+        <include
+            layout="@layout/content_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+-->
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_weight="6"
+        android:divider="@drawable/divider"
+        android:dividerPadding="12dip"
+        android:showDividers="middle"
+        android:background="#dddddd"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+
+        <ImageButton
+            android:id="@+id/clearButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:onClick="onClearButtonClicked"
+            app:srcCompat="@android:drawable/stat_notify_sync" />
+
+        <ImageButton
+            android:id="@+id/saveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:onClick="onSaveButtonClicked"
+            app:srcCompat="@android:drawable/stat_sys_download_done" />
+
+    </LinearLayout>
+
+
+</LinearLayout>
