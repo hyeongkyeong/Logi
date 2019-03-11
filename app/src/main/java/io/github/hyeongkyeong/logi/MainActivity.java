@@ -6,6 +6,10 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
@@ -26,7 +30,7 @@ import java.util.UUID;
 
 import static java.lang.Thread.sleep;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity  {
     private static final String TAG = "MainActivity";
 
     /* 상수 */
@@ -45,9 +49,25 @@ public class MainActivity extends AppCompatActivity {
     Handler mHandler = null;
     private TextView contentView;
     private ImageButton bluetoothIcon;
+    private TextView statusMessage;
+
+    /* Thread 관련 */
+    private ConnectThread connectTask;
 
     /* Log 관련 */
     private SerialLogData logdata;
+
+    /* 앱 조작 관련 */
+    private BackPressCloseHandler backPressCloseHandler;
+
+    /* 센서 관련 */
+    private SensorCollector sensorCollector;
+    private TextView sens_acc;
+    private TextView sens_gro;
+    private TextView sens_mag;
+    private TextView sens_light;
+    private TextView sens_proxi;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,13 +80,26 @@ public class MainActivity extends AppCompatActivity {
 
         bluetoothIcon = findViewById(R.id.bluetoothIcon);
         contentView = findViewById(R.id.contentTextView);
+        statusMessage = findViewById(R.id.status_msg);
 
+        sens_acc = findViewById(R.id.accelorometer_val);
+        sens_gro = findViewById(R.id.gyroscopr_val);
+        sens_mag = findViewById(R.id.magnetic_val);
+        sens_light = findViewById(R.id.light_val);
+        sens_proxi = findViewById(R.id.proximity_val);
 
+        backPressCloseHandler = new BackPressCloseHandler(this);
+        sensorCollector = new SensorCollector(this);
 
         logdata = new SerialLogData();
+    }
 
-
-
+    @Override
+    public void onBackPressed(){
+        connectTask.cancel();
+        //finish();
+        backPressCloseHandler.onBackPressed();
+        Toast.makeText(mContext, "한번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -74,11 +107,12 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         Log.d(TAG,"onStart()");
 
-        new Thread(new Runnable() {
+
+        Thread bluethothThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while(true){
-                    Log.d(TAG, "onCreate 타스크");
+                    Log.d(TAG, "Thread Runable run()");
                     try {
                         sleep(500);
                     } catch (InterruptedException e) {
@@ -87,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         public void run() {
                             Log.d(TAG, "runOnUiThread 타스크");
+                            /* 블루투스 정보 갱신 */
                             if(bluetoothPaired && bluetoothSocketEnabled){
                                 bluetoothIcon.setColorFilter(getResources().getColor(R.color.colorAccent));
                                 if(logdata != null){
@@ -95,17 +130,44 @@ public class MainActivity extends AppCompatActivity {
                             }else{
                                 bluetoothIcon.setColorFilter(android.R.color.white);
                             }
+                            /* 센서정보 갱신 */
+                            sens_gro.setText(Double.toString(sensorCollector.gyroSensor_val_x)+"\n"
+                                    +Double.toString(sensorCollector.gyroSensor_val_y)+"\n"
+                                    +Double.toString(sensorCollector.gyroSensor_val_z)+"\n");
+                            sens_acc.setText(Double.toString(sensorCollector.accSensor_val_x)+"\n"
+                                    +Double.toString(sensorCollector.accSensor_val_y)+"\n"
+                                    +Double.toString(sensorCollector.accSensor_val_z)+"\n");
+                            sens_mag.setText(Double.toString(sensorCollector.magSensor_val_x)+"\n"
+                                    +Double.toString(sensorCollector.magSensor_val_y)+"\n"
+                                    +Double.toString(sensorCollector.magSensor_val_z)+"\n");
+                            sens_light.setText(Double.toString((sensorCollector.lightSensor_val)));
+                            sens_proxi.setText(Double.toString((sensorCollector.proximity_val)));
+
+
                         }
                     });
                 }
             }
-        }).start();
+        });
+
+        bluethothThread.start();
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG,"onResume()");
+
+        sensorCollector.register();
+
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        sensorCollector.unregister();
+
     }
 
     @Override
@@ -144,11 +206,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSaveButtonClicked(View v){
-        try {
-            String logfile = logdata.fileWrite();
-            Toast.makeText(mContext, logfile+" 파일이 생성되었습니다.", Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(logdata.isEmply()){
+            Toast.makeText(mContext, "저장할 데이터가 없습니다.", Toast.LENGTH_SHORT).show();
+        }else {
+            try {
+                String logfile = logdata.fileWrite();
+                Toast.makeText(mContext, logfile + " 파일이 생성되었습니다.", Toast.LENGTH_SHORT).show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -194,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
             builder.setItems(btDeviceList, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int devNum) {
                     Toast.makeText(mContext, "기기를 연결합니다.", Toast.LENGTH_SHORT).show();
-                    ConnectThread connectTask = new ConnectThread(pairedDevicesArray[devNum]);
+                    connectTask = new ConnectThread(pairedDevicesArray[devNum]);
                     connectTask.start();
                 }
             });
@@ -205,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
         return builder.create();
     }
 
+
     private class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
         private InputStream mmInStream;
@@ -212,6 +279,7 @@ public class MainActivity extends AppCompatActivity {
 
         public ConnectThread(BluetoothDevice device) {
             // Use a temporary object that is later assigned to mmSocket, because mmSocket is final
+
             BluetoothSocket tmp = null;
             mmDevice = device;
 
@@ -224,8 +292,10 @@ public class MainActivity extends AppCompatActivity {
                 bluetoothSocketEnabled = false;
                 Log.d(TAG,"createRfcommSocketToServiceRecord() 실패");
                 Log.e(TAG,e.toString());
+                statusMessage.setText("createRfcommSocketToServiceRecord 실패");
             }
             mmSocket = tmp;
+            statusMessage.setText(device.getName()+"에 연결됨");
         }
 
         public void run() {
@@ -244,16 +314,17 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG,connectException.toString());
                 bluetoothPaired = false;
                 bluetoothSocketEnabled = false;
+                statusMessage.setText("블루투스 소켓 연결 실패");
 
                 try {
                     mmSocket.close();
                 } catch (IOException closeException) {
                     Log.d(TAG,"블루투스 소켓 닫기 실패");
                     Log.d(TAG,"mmSocket.close() 실패");
+                    statusMessage.setText("블루투스 소켓 닫기 실패");
                     bluetoothPaired = false;
                     bluetoothSocketEnabled = false;
                     Log.e(TAG,closeException.toString());
-
                 }
                 return;
             }
@@ -263,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     Log.d(TAG,"mmSocket.getInputStream() 실패");
                     e.printStackTrace();
+                    statusMessage.setText("데이터 읽기 실패");
                 }
             }
             Log.d(TAG,"bluetoothPaired: "+bluetoothPaired);
@@ -283,6 +355,7 @@ public class MainActivity extends AppCompatActivity {
                     bluetoothSocketEnabled=false;
                     bluetoothPaired=false;
                     Log.d(TAG, "mmInStream.read(buffer) 실패");
+                    statusMessage.setText("데이터 읽기 실패");
                     Log.e(TAG,e.toString());
                 }
             }
@@ -297,6 +370,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-
 }
+
+

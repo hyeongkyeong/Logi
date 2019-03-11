@@ -42,6 +42,10 @@ public class SerialLogData {
         storedData.clear();
     }
 
+    public boolean isEmply(){
+        return storedData.isEmpty();
+    }
+
     public String fileWrite() throws IOException {
         DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
         final String recordFileName =  rootDirString + File.separator + "Record_"+ df.format(Calendar.getInstance().getTime())+".txt";
