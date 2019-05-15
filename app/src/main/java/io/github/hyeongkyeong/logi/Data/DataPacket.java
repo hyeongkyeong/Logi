@@ -1,18 +1,19 @@
 package io.github.hyeongkyeong.logi.Data;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 public class DataPacket {
-    LocalDateTime timestemp;
-    int intData;
-    double doubleData;
-    double gyroSensor_val_x;
-    double gyroSensor_val_y;
-    double gyroSensor_val_z;
-    double accSensor_val_x;
-    double accSensor_val_y;
-    double accSensor_val_z;
-    double magSensor_val_x;
-    double magSensor_val_y;
-    double magSensor_val_z;
+    public Date datetime;
+    public int btData;
+    public double gyroSensor_val_x;
+    public double gyroSensor_val_y;
+    public double gyroSensor_val_z;
+    public double accSensor_val_x;
+    public double accSensor_val_y;
+    public double accSensor_val_z;
+    public double gps_longitude; // 위도
+    public double gps_latitude;  // 경도
+    public double gps_altitude;  // 고도
+
+
 }

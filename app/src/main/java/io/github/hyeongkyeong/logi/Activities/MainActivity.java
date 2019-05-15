@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentManager;
@@ -29,9 +30,11 @@ import java.util.UUID;
 import static java.lang.Thread.sleep;
 
 import io.github.hyeongkyeong.logi.Bluetooth.BluetoothHelper;
+import io.github.hyeongkyeong.logi.Data.DataPacket;
 import io.github.hyeongkyeong.logi.Fragment.Chart_Menu_Fragment;
 import io.github.hyeongkyeong.logi.Fragment.Disp_Menu_Fragment;
 import io.github.hyeongkyeong.logi.Fragment.Log_Menu_Fragment;
+import io.github.hyeongkyeong.logi.GPS.GPSHelper;
 import io.github.hyeongkyeong.logi.Handler.BackPressCloseHandler;
 import io.github.hyeongkyeong.logi.R;
 import io.github.hyeongkyeong.logi.Sensor.SensorHelper;
@@ -46,10 +49,14 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT=1; //사용자 동의 다이얼로그
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); //SerialPortServiceClass_UUID
 
-    /* 장치 관련 */
+    /* 블루투스 관련 */
     private BluetoothAdapter mBluetoothAdapter = null;
 
-    private SensorHelper sensorHelper;
+    /* 센서 관련 */
+    public SensorHelper sensorHelper;
+
+    /*GPS 관련 */
+    public GPSHelper gpsHelper;
 
     /* UI 관련 */
     Context mContext;
@@ -71,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private Chart_Menu_Fragment chart_menu_frag;
     private Log_Menu_Fragment log_menu_frag;
 
-    private int previous_item;
+    //private int previous_item;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
@@ -81,15 +88,15 @@ public class MainActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.menu_item1:
                     transaction.replace(R.id.fragment_view, disp_menu_frag).commitAllowingStateLoss();
-                    previous_item = item.getItemId();
+                    //previous_item = item.getItemId();
                     return true;
                 case R.id.menu_item2:
                     transaction.replace(R.id.fragment_view, log_menu_frag).commitAllowingStateLoss();
-                    previous_item = item.getItemId();
+                    //previous_item = item.getItemId();
                     return true;
                 case R.id.menu_item3:
                     transaction.replace(R.id.fragment_view, chart_menu_frag).commitAllowingStateLoss();
-                    previous_item = item.getItemId();
+                    //previous_item = item.getItemId();
                     return true;
 
             }
@@ -106,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
         navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        previous_item=R.id.menu_item1;
+        //previous_item=R.id.menu_item1;
 
         mHandler = new Handler();
 
@@ -119,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
         backPressCloseHandler = new BackPressCloseHandler(this);
         sensorHelper = new SensorHelper(this);
+        gpsHelper = new GPSHelper(this);
     }
     @Override
     public void onBackPressed(){
@@ -273,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
 
         public void run() {
             // Cancel discovery because it will slow down the connection
+            SerialLogData.clear();
             mBluetoothAdapter.cancelDiscovery();
             try {
                 // Connect the device through the socket. This will block
@@ -324,7 +333,18 @@ public class MainActivity extends AppCompatActivity {
                     bytesAvailable = mmInStream.read(buffer);
                     if(bytesAvailable>0){
                         for(int i=0;  i<bytesAvailable;i++){
-                            SerialLogData.add(buffer[i]);
+                            DataPacket data = new DataPacket();
+                            data.btData=buffer[i]&0xff;
+                            data.accSensor_val_x=sensorHelper.accSensor_val_x;
+                            data.accSensor_val_y=sensorHelper.accSensor_val_y;
+                            data.accSensor_val_z=sensorHelper.accSensor_val_z;
+                            data.gyroSensor_val_x=sensorHelper.gyroSensor_val_x;
+                            data.gyroSensor_val_y=sensorHelper.gyroSensor_val_y;
+                            data.gyroSensor_val_z=sensorHelper.gyroSensor_val_z;
+                            data.gps_longitude=gpsHelper.longitude;
+                            data.gps_latitude=gpsHelper.latitude;
+                            data.gps_altitude=gpsHelper.altitude;
+                            SerialLogData.add(data);
                         }
                     }
                 } catch (IOException e) {
@@ -376,6 +396,14 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    public GPSHelper getGPSHelper() {
+        return this.gpsHelper;
+    }
+    public SensorHelper getSensorHelper() {
+        return this.sensorHelper;
+    }
+
     public void onBluetoothButtonClicked(View v){
         if(bluetoothActivate()==true){
             AlertDialog bluetoothSelectAlert = bluetoothSelectDialog();
@@ -403,8 +431,4 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    public SensorHelper getSensorHelper() {
-        return this.sensorHelper;
-    }
 }

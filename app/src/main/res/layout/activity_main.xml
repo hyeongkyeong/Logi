@@ -48,9 +48,9 @@
                 android:layout_height="50dp"
                 android:layout_toLeftOf="@id/SaveIcon"
                 android:background="@color/colorPrimary"
+                android:onClick="onClearIconButtonClicked"
                 android:tint="@android:color/background_light"
-                app:srcCompat="@android:drawable/ic_popup_sync"
-                android:onClick="onClearIconButtonClicked"/>
+                app:srcCompat="@android:drawable/ic_menu_delete" />
 
             <ImageButton
                 android:id="@+id/SaveIcon"
@@ -58,9 +58,9 @@
                 android:layout_height="50dp"
                 android:layout_alignParentEnd="true"
                 android:background="@color/colorPrimary"
+                android:onClick="onSaveIconButtonClicked"
                 android:tint="@android:color/background_light"
-                app:srcCompat="@drawable/ic_file_download_black_24dp"
-                android:onClick="onSaveIconButtonClicked"/>
+                app:srcCompat="@android:drawable/ic_menu_save" />
 
         </RelativeLayout>
 

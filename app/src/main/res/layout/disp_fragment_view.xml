@@ -9,19 +9,31 @@
     <TextView
         android:id="@+id/disp_btdata"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="50"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:fontFamily="@font/rajdhani"
         android:gravity="center_horizontal|center_vertical"
         android:text="00"
-        android:textSize="150sp" />
+        android:textSize="200sp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="15dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="30dp"
+        android:progress="200"
+        android:max="300"
+        android:progressDrawable="@drawable/progressbar_custom" />
 
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="50"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:stretchColumns="*">
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_weight="50">
 
         <TableRow
             android:layout_width="match_parent"
@@ -29,22 +41,64 @@
 
             <TextView
                 android:id="@+id/accelerrometer_title"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Accelerometer"
+                android:text="ACC"
                 android:textSize="18sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/accelorometer_val_x"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/accelorometer_val_y"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/accelorometer_val_z"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
 
             <TextView
                 android:id="@+id/gyroscope_title"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Gyroscope"
+                android:text="GYRO"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/gyroscopr_val_x"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/gyroscopr_val_y"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/gyroscopr_val_z"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
         </TableRow>
 
         <TableRow
@@ -52,58 +106,33 @@
             android:layout_height="match_parent">
 
             <TextView
-                android:id="@+id/accelorometer_val"
-                android:layout_width="match_parent"
+                android:id="@+id/gps_title"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/gyroscopr_val"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:id="@+id/magnetic_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:layout_weight="1"
-                android:text="Magnetic"
+                android:text="GPS"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
             <TextView
-                android:id="@+id/magnetic_val"
-                android:layout_width="match_parent"
+                android:id="@+id/gps_val_longitude"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/light_val"
-                android:layout_width="match_parent"
+                android:id="@+id/gps_val_latitude"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/gps_val_altitude"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
         </TableRow>
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
     </TableLayout>
 </LinearLayout>

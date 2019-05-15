@@ -8,7 +8,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
+import io.github.hyeongkyeong.logi.Data.SerialLogData;
 import io.github.hyeongkyeong.logi.R;
 
 public class IntroActivity extends AppCompatActivity {
@@ -16,6 +18,7 @@ public class IntroActivity extends AppCompatActivity {
 
     boolean StorageReadPermission = false;
     boolean StorageWritePermission = false;
+    boolean GpsWritePermission = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +40,8 @@ public class IntroActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG,"onResume()");
-        Log.d(TAG,"StorageReadPermission: "+StorageReadPermission);
-        Log.d(TAG,"StorageWritePermission: "+StorageWritePermission);
-        if(StorageReadPermission || StorageWritePermission) {
-            Log.d(TAG,"MainActivity Start");
-            Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-            startActivity(intent);
-        }
+
+
     }
 
     @Override
@@ -63,12 +60,14 @@ public class IntroActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG,"onDestroy()");
+        SerialLogData.clear();
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
         Log.d(TAG,"onRestart()");
+        SerialLogData.clear();
     }
 
 
@@ -78,14 +77,16 @@ public class IntroActivity extends AppCompatActivity {
         boolean result = false;
         int ReadPermissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
         int WritePermissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int GpsPermissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
 
         StorageReadPermission = (ReadPermissionCheck == PackageManager.PERMISSION_GRANTED);
         StorageWritePermission = (WritePermissionCheck == PackageManager.PERMISSION_GRANTED);
-        if ((StorageReadPermission==true)&&(StorageWritePermission==true)) {
+        GpsWritePermission = (GpsPermissionCheck == PackageManager.PERMISSION_GRANTED);
+        if ((StorageReadPermission==true)&&(StorageWritePermission==true) && (GpsWritePermission==true)) {
             result = true;
         } else {
             result = false;
-            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION};
             ActivityCompat.requestPermissions(this, permissions, 1);
         }
         return result;
@@ -100,11 +101,25 @@ public class IntroActivity extends AppCompatActivity {
                     StorageReadPermission = (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
                     StorageWritePermission = (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
                     onRestart();
+                    GpsWritePermission = (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+                    onRestart();
                 } else {
                     //Toast.makeText(this, permissions[i] + " 권한이 승인되지 않음.", Toast.LENGTH_LONG).show();
                     finish();
                 }
             }
+        }
+    }
+
+    public void onStartButtonClicked(View v){
+        Log.d(TAG,"onResume()");
+        Log.d(TAG,"StorageReadPermission: "+StorageReadPermission);
+        Log.d(TAG,"StorageWritePermission: "+StorageWritePermission);
+        SerialLogData.clear();
+        if(StorageReadPermission && StorageWritePermission && GpsWritePermission) {
+            Log.d(TAG,"MainActivity Start");
+            Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+            startActivity(intent);
         }
     }
 }

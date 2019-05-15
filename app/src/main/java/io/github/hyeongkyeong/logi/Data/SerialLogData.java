@@ -12,12 +12,16 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+
+import io.github.hyeongkyeong.logi.Sensor.SensorHelper;
 
 public class SerialLogData {
     private static final String TAG = "SerialLogData";
 
     /* 데이터 */
-    private static ArrayList<Byte> storedData = new ArrayList<>();
+    //private static ArrayList<Byte> storedData = new ArrayList<>();
+    private static ArrayList<DataPacket> storedData = new ArrayList<DataPacket>();
 
     /* 파일 처리 */
     public static final String rootDirString = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "Logi";
@@ -30,13 +34,21 @@ public class SerialLogData {
             rootDir.mkdir();
         }
         DateFormat dformat = new SimpleDateFormat("yyyyMMddHHmmss");
-        final String recordFileName =  rootDirString + File.separator + "Record_"+ dformat.format(Calendar.getInstance().getTime())+".txt";
+        final String recordFileName =  rootDirString + File.separator + "Record_"+ dformat.format(Calendar.getInstance().getTime())+".csv";
         File fRecordFile = new File(recordFileName);
         fRecordFile.createNewFile();
         FileOutputStream fosRecordFile = new FileOutputStream(fRecordFile);
         OutputStreamWriter oswRecordFile = new OutputStreamWriter(fosRecordFile, "UTF-8");
         BufferedWriter bwRecordFile = new BufferedWriter(oswRecordFile);
-        bwRecordFile.write(getStringData());
+        bwRecordFile.write("time, bluetooth, acc_x,acc_y, acc_z, gyro_x, gyro_y, gyro_z, gps_longitude, gps_latitude, gps_altitude\n");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss:SSS");
+        for(int i=0;i<storedData.size();i++){
+            final DataPacket data=storedData.get(i);
+            bwRecordFile.write(timeFormat.format(data.datetime)+","+data.btData+","
+                    +data.accSensor_val_x+","+data.accSensor_val_y+","+data.accSensor_val_z+","
+                    +data.gyroSensor_val_x+","+data.gyroSensor_val_y+","+data.gyroSensor_val_z+","
+                    +data.gps_longitude+","+data.gps_latitude+","+data.gps_altitude+"\n");
+        }
         bwRecordFile.close();
         String retval=null;
         if(fRecordFile.exists()) {
@@ -47,17 +59,6 @@ public class SerialLogData {
     }
 
 
-    public static Byte[] getByteArray() {
-        Byte byteData[] = new Byte[storedData.size()];
-        if(storedData.isEmpty()!=true) {
-            for (int i = 0; i < storedData.size(); i++) {
-                byteData[i] = storedData.get(i);
-            }
-        }else{
-            Log.d(TAG, "getByteArray() 데이터가 없음");
-        }
-        return byteData;
-    }
 
     public static String toStringLastData(int num){
         StringBuilder sb = new StringBuilder();
@@ -71,8 +72,8 @@ public class SerialLogData {
             }
 
             for (int i = start_index; i < last_index; i++) {
-                final byte byteData = storedData.get(i);
-                sb.append(String.format("%02x ", byteData & 0xff));
+                final int intData = storedData.get(i).btData;
+                sb.append(String.format(intData+" "));
             }
         }else{
             Log.d(TAG, "toStringLastData(): 데이터가 없음");
@@ -94,10 +95,9 @@ public class SerialLogData {
             }
             int dataArrayIndex=0;
             for (int i = start_index; i < last_index; i++) {
-                final Byte byteData = storedData.get(i);
-                dataArray[dataArrayIndex]=byteData.intValue();
+                final int intData = storedData.get(i).btData;
+                dataArray[dataArrayIndex]=intData;
                 dataArrayIndex++;
-                //sb.append(String.format("%02x ", byteData & 0xff));
             }
         }else{
             Log.d(TAG, "getLastNumData(): 데이터가 없음");
@@ -106,8 +106,13 @@ public class SerialLogData {
         return dataArray;
     }
 
-
+/*
     public static boolean add(Byte data){
+        return storedData.add(data);
+    }
+*/
+    public static boolean add(DataPacket data){
+        data.datetime = new Date(System.currentTimeMillis());
         return storedData.add(data);
     }
 
@@ -132,8 +137,8 @@ public class SerialLogData {
         StringBuilder sb = new StringBuilder();
         if(storedData.isEmpty()!=true) {
             for (int i =  0; i < storedData.size(); i++) {
-                final byte byteData = storedData.get(i);
-                sb.append(String.format("%02x ", byteData & 0xff));
+                final int intData = storedData.get(i).btData;
+                sb.append(String.format(intData+" "));
             }
         }else{
             Log.d(TAG, "toString() 데이터가 없음");

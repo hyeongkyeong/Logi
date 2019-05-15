@@ -1,5 +1,6 @@
 package io.github.hyeongkyeong.logi.Sensor;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
